@@ -63,7 +63,7 @@ TOOLTIP_ARGS = parser.format_help()
 OUTPUT_COMMENTS = True
 OUTPUT_HEADER = True
 OUTPUT_LINE_NUMBERS = False
-SHOW_EDITOR = True
+SHOW_EDITOR = False
 MODAL = False  # if true commands are suppressed if the same as previous line.
 USE_TLO = True # if true G43 will be output following tool changes
 OUTPUT_DOUBLES = True  # if false duplicate axis values are suppressed if the same as previous line.
@@ -75,7 +75,7 @@ UNITS = "G21"  # G21 for metric, G20 for us standard
 UNIT_SPEED_FORMAT = 'mm/min'
 UNIT_FORMAT = 'mm'
 
-MACHINE_NAME = "LinuxCNC"
+MACHINE_NAME = "Tormach"
 CORNER_MIN = {'x': 0, 'y': 0, 'z': 0}
 CORNER_MAX = {'x': 500, 'y': 300, 'z': 300}
 PRECISION = 3
@@ -87,7 +87,8 @@ PREAMBLE = '''G17 G54 G40 G49 G80 G90
 # Postamble text will appear following the last operation.
 POSTAMBLE = '''M05
 G17 G54 G90 G80 G40
-M2
+G30
+M30
 '''
 
 # Pre operation text will be inserted before every operation
@@ -97,7 +98,8 @@ PRE_OPERATION = ''''''
 POST_OPERATION = ''''''
 
 # Tool Change commands will be inserted before a tool change
-TOOL_CHANGE = ''''''
+TOOL_CHANGE = '''G30
+'''
 
 # to distinguish python built-in open function from the one declared below
 if open.__module__ in ['__builtin__','io']:
@@ -243,6 +245,7 @@ def export(objectslist, filename, argstring):
             gcode += linenumber() + "(finish operation: %s)\n" % obj.Label
         for line in POST_OPERATION.splitlines(True):
             gcode += linenumber() + line
+        gcode += linenumber() + "\n" #blank line after operation
 
         # turn coolant off if required
         if not coolantMode == 'None':
@@ -375,7 +378,7 @@ def parse(pathobj):
 
                 # add height offset
                 if USE_TLO:
-                    tool_height = '\nG43 H' + str(int(c.Parameters['T']))
+                    tool_height = 'G43 H' + str(int(c.Parameters['T']))
                     outstring.append(tool_height)
 
             if command == "message":
